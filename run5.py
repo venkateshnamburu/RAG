@@ -172,7 +172,8 @@ if search_btn and query:
 
     prompt = f"""
 You are a highly knowledgeable assistant, and your task is to provide the most accurate and relevant answer to the user's question based on the given context. The context consists of information extracted from resumes.
-You are a strict JSON generator. Your task is to return a JSON object with the following structure only
+You are a strict JSON generator. Your task is to return a JSON object with the following structure only, and nothing else:
+
 You must do the following:
 1. Read the context carefully and determine which candidate's resume best answers the user's question.
 2. Provide the most accurate and relevant answer by picking the best matching candidate's information.
@@ -183,6 +184,10 @@ You must do the following:
   "filename": "string",              # Name of the PDF file containing the resume of the top candidate
   "matched_chunks": ["string", ...]  # List of resume sections that are most relevant to the answer
 }}
+Rules:
+- DO NOT add any preamble, explanation, or commentary.
+- DO NOT use Markdown or code blocks.
+- ONLY return the raw JSON object, starting with '{{' and ending with '}}'.
 
 Context:
 {context}
