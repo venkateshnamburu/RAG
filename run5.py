@@ -32,7 +32,7 @@ AZURE_CONTAINER_NAME = st.secrets["AZURE_CONTAINER_NAME"]
 GOOGLE_API_KEY = st.secrets["GOOGLE_API_KEY"]
 PINECONE_API_KEY = st.secrets["PINECONE_API_KEY"]
 PINECONE_ENV = st.secrets["PINECONE_ENVIRONMENT"]
-PINECONE_INDEX = st.secrets["PINECONE_INDEX"]
+PINECONE_INDEX = st.secrets["PINECONE_INDEX1"]
 
 # ---- Configure APIs ----
 genai.configure(api_key=GOOGLE_API_KEY)
