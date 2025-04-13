@@ -171,17 +171,18 @@ if search_btn and query:
     context = "\n\n".join([match["metadata"]["text"] for match in results["matches"]])
 
     prompt = f"""
-You are a helpful assistant that returns answers in raw JSON format without any preamble or explanation.
+You are a highly knowledgeable assistant, and your task is to provide the most accurate and relevant answer to the user's question based on the given context. The context consists of information extracted from resumes.
 
-ONLY return a valid JSON object with the following structure:
+You must do the following:
+1. Read the context carefully and determine which candidate's resume best answers the user's question.
+2. Provide the most accurate and relevant answer by picking the best matching candidate's information.
+3. The answer must be in the following JSON format:
 {{
-  "top_candidate": "string",
-  "experience_years": number,
-  "skills": ["string", ...],
-  "matched_chunks": ["string", ...]
+  "top_candidate": "string",          # Name of the top candidate
+  "experience_years": number,        # Number of years of experience of the top candidate
+  "filename": "string",              # Name of the PDF file containing the resume of the top candidate
+  "matched_chunks": ["string", ...]  # List of resume sections that are most relevant to the answer
 }}
-
-Using the context below, identify the best matching candidate.
 
 Context:
 {context}
@@ -189,7 +190,7 @@ Context:
 Question:
 {query}
 
-IMPORTANT: Do not include any commentary, explanation, or formatting outside the JSON object.
+IMPORTANT: The response should only include a valid JSON object as described above. No additional explanation or commentary is needed.
 """
 
     model = genai.GenerativeModel("gemini-1.5-pro-latest")
