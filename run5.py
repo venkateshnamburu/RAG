@@ -220,7 +220,7 @@ Question:
     answer_json = extract_json(rag_response.text)
 
     if answer_json:
-        st.subheader("🤖 Gemini JSON Answer")
+        st.subheader("🤖 Gemini Answer")
         st.json(answer_json)
 
         correct_answer = answer_json.get("top_candidate", "").strip()
