@@ -1,34 +1,28 @@
-import os
 import io
 import json
 import fitz  # PyMuPDF
 import numpy as np
 import streamlit as st
-from dotenv import load_dotenv
 from tqdm import tqdm
-from sklearn.feature_extraction.text import TfidfVectorizer
+from datetime import datetime
+import re
+
 from azure.storage.blob import BlobServiceClient
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 import google.generativeai as genai
 from pinecone import Pinecone, ServerlessSpec
-from rank_bm25 import BM25Okapi
-from sklearn.metrics import precision_score, recall_score, f1_score
-import random
-from datetime import datetime
-import re
 
-# ---- Load environment variables ----
-load_dotenv()
-AZURE_CONNECTION_STRING = os.getenv("AZURE_CONNECTION_STRING")
-AZURE_CONTAINER_NAME = os.getenv("AZURE_CONTAINER_NAME")
-GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
-PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
-PINECONE_ENV = os.getenv("PINECONE_ENV")
-PINECONE_INDEX = os.getenv("PINECONE_INDEX1")
+# ---- Load secrets from Streamlit ----
+AZURE_CONNECTION_STRING = st.secrets["AZURE_CONNECTION_STRING"]
+AZURE_CONTAINER_NAME = st.secrets["AZURE_CONTAINER_NAME"]
+GOOGLE_API_KEY = st.secrets["GOOGLE_API_KEY"]
+PINECONE_API_KEY = st.secrets["PINECONE_API_KEY"]
+PINECONE_ENV = st.secrets["PINECONE_ENVIRONMENT"]
+PINECONE_INDEX = st.secrets["PINECONE_INDEX"]
 
 # ---- Configure APIs ----
 genai.configure(api_key=GOOGLE_API_KEY)
-pc = Pinecone(api_key=PINECONE_API_KEY)
+pc = Pinecone(api_key=PINECONE_API_KEY, environment=PINECONE_ENV)
 
 # ---- Streamlit UI ----
 st.set_page_config(page_title="AI Resume Matcher", layout="wide")
@@ -127,7 +121,7 @@ with st.spinner("📥 Loading and embedding all resumes from Azure Blob..."):
 
 # ---- Search & RAG Inference ----
 st.sidebar.header("🔍 Ask a Question")
-query = st.sidebar.text_input("Type your question", "  ")
+query = st.sidebar.text_input("Type your question", " ")
 search_btn = st.sidebar.button("Search")
 
 # ---- Helper Function to Evaluate Metrics ----
