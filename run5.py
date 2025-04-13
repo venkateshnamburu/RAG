@@ -40,6 +40,18 @@ pc = Pinecone(api_key=PINECONE_API_KEY, environment=PINECONE_ENV)
 
 # ---- Streamlit UI ----
 st.set_page_config(page_title="AI Resume Matcher", layout="wide")
+
+# ---- Ask for User Name Before Proceeding ----
+if "user_name" not in st.session_state:
+    st.session_state.user_name = ""
+
+if not st.session_state.user_name:
+    st.session_state.user_name = st.text_input("👤 Please enter your name to continue:", "")
+    if st.session_state.user_name:
+        st.success(f"Welcome, {st.session_state.user_name}!")
+    else:
+        st.stop()
+
 st.title("🤖 RAG Based LLM with GEMINI Vision Model")
 
 # ---- Internal PDF Processing from Azure Blob ----
@@ -234,6 +246,7 @@ Question:
         )
 
         evaluation_result = {
+            "user_name": st.session_state.user_name,
             "query": query,
             "generated_answer": answer_json,
             "evaluation_metrics": eval_metrics,
