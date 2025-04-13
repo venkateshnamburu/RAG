@@ -19,7 +19,7 @@ required_keys = [
     "GOOGLE_API_KEY",
     "PINECONE_API_KEY",
     "PINECONE_ENVIRONMENT",
-    "PINECONE_INDEX"
+    "PINECONE_INDEX1"
 ]
 
 missing_keys = [key for key in required_keys if key not in st.secrets]
