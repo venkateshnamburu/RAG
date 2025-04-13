@@ -100,19 +100,29 @@ def embed_chunks(_all_chunks):
 
 @st.cache_resource
 def initialize_index():
-    if PINECONE_INDEX in [idx.name for idx in pc.list_indexes()]:
-        pc.delete_index(PINECONE_INDEX)
-    pc.create_index(
-        name=PINECONE_INDEX,
-        dimension=768,
-        metric="cosine",
-        spec=ServerlessSpec(cloud="aws", region=PINECONE_ENV)
-    )
-    return pc.Index(PINECONE_INDEX)
+    try:
+        # Check if the index already exists
+        index_list = pc.list_indexes()
+        if PINECONE_INDEX not in [idx.name for idx in index_list]:
+            print(f"Index {PINECONE_INDEX} not found. Creating...")
+            pc.create_index(
+                name=PINECONE_INDEX,
+                dimension=768,
+                metric="cosine",
+                spec=ServerlessSpec(cloud="aws", region=PINECONE_ENV)
+            )
+        else:
+            print(f"Index {PINECONE_INDEX} already exists.")
+        return pc.Index(PINECONE_INDEX)
+
+    except Exception as e:
+        st.error(f"Error during index initialization: {str(e)}")
+        st.stop()
+
 
 @st.cache_resource
 def upsert_to_pinecone(embedded_chunks):
-    index = initialize_index()
+    index = initialize_index()  # Initialize index only if necessary
     for i in tqdm(range(0, len(embedded_chunks), 100)):
         batch = embedded_chunks[i:i + 100]
         vectors = [
