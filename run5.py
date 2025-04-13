@@ -172,7 +172,7 @@ if search_btn and query:
 
     prompt = f"""
 You are a highly knowledgeable assistant, and your task is to provide the most accurate and relevant answer to the user's question based on the given context. The context consists of information extracted from resumes.
-
+You are a strict JSON generator. Your task is to return a JSON object with the following structure only
 You must do the following:
 1. Read the context carefully and determine which candidate's resume best answers the user's question.
 2. Provide the most accurate and relevant answer by picking the best matching candidate's information.
