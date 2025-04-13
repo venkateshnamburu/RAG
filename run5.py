@@ -12,7 +12,21 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 import google.generativeai as genai
 from pinecone import Pinecone, ServerlessSpec
 
-# ---- Load secrets from Streamlit ----
+# ---- Check and Load Secrets from Streamlit ----
+required_keys = [
+    "AZURE_CONNECTION_STRING",
+    "AZURE_CONTAINER_NAME",
+    "GOOGLE_API_KEY",
+    "PINECONE_API_KEY",
+    "PINECONE_ENVIRONMENT",
+    "PINECONE_INDEX"
+]
+
+missing_keys = [key for key in required_keys if key not in st.secrets]
+if missing_keys:
+    st.error(f"❌ Missing keys in `.streamlit/secrets.toml`: {', '.join(missing_keys)}")
+    st.stop()
+
 AZURE_CONNECTION_STRING = st.secrets["AZURE_CONNECTION_STRING"]
 AZURE_CONTAINER_NAME = st.secrets["AZURE_CONTAINER_NAME"]
 GOOGLE_API_KEY = st.secrets["GOOGLE_API_KEY"]
