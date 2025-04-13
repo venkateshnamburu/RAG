@@ -7,7 +7,7 @@ from tqdm import tqdm
 from datetime import datetime
 import re
 
-from azure.storage.blob import BlobServiceClient
+from azure.storage.blob import BlobServiceClient, ContentSettings
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 import google.generativeai as genai
 from pinecone import Pinecone, ServerlessSpec
@@ -127,7 +127,7 @@ def upsert_to_pinecone(embedded_chunks):
     return index
 
 # ---- Initial Preprocessing on Start ----
-with st.spinner("📥 Loading and embedding all resumes from Azure Blob..."):
+with st.spinner("📅 Loading and embedding all resumes from Azure Blob..."):
     all_chunks = load_and_process_all_pdfs()
     embedded_chunks = embed_chunks(all_chunks)
     index = upsert_to_pinecone(embedded_chunks)
@@ -156,6 +156,17 @@ def calculate_metrics(retrieved_texts, correct_answer, model_answer):
         "mrr": mrr
     }
 
+# ---- Azure Blob Upload Helper ----
+def upload_json_to_blob(data: dict, blob_filename: str, container_name: str = AZURE_CONTAINER_NAME):
+    blob_service = BlobServiceClient.from_connection_string(AZURE_CONNECTION_STRING)
+    blob_client = blob_service.get_blob_client(container=container_name, blob=blob_filename)
+
+    blob_client.upload_blob(
+        json.dumps(data, indent=4),
+        overwrite=True,
+        content_settings=ContentSettings(content_type='application/json')
+    )
+
 # ---- RAG Query Execution ----
 if search_btn and query:
     st.info("🔍 Running hybrid search...")
@@ -179,10 +190,10 @@ You must do the following:
 2. Provide the most accurate and relevant answer by picking the best matching candidate's information.
 3. The answer must be in the following JSON format:
 {{
-  "top_candidate": "string",          # Name of the top candidate
-  "experience_years": number,        # Number of years of experience of the top candidate
-  "filename": "string",              # Name of the PDF file containing the resume of the top candidate
-  "matched_chunks": ["string", ...]  # List of resume sections that are most relevant to the answer
+  "top_candidate": "string",
+  "experience_years": number,
+  "filename": "string",
+  "matched_chunks": ["string", ...]
 }}
 Rules:
 - DO NOT add any preamble, explanation, or commentary.
@@ -194,8 +205,6 @@ Context:
 
 Question:
 {query}
-
-IMPORTANT: The response should only include a valid JSON object as described above. No additional explanation or commentary is needed.
 """
 
     model = genai.GenerativeModel("gemini-1.5-pro-latest")
@@ -211,7 +220,7 @@ IMPORTANT: The response should only include a valid JSON object as described abo
     answer_json = extract_json(rag_response.text)
 
     if answer_json:
-        st.subheader("🧠 Gemini JSON Answer")
+        st.subheader("🤖 Gemini JSON Answer")
         st.json(answer_json)
 
         correct_answer = answer_json.get("top_candidate", "").strip()
@@ -231,8 +240,10 @@ IMPORTANT: The response should only include a valid JSON object as described abo
             "timestamp": datetime.now().isoformat()
         }
 
-        with open('rag_evaluations.json', 'a') as f:
-            json.dump(evaluation_result, f, indent=4)
+        blob_filename = f"evaluations/eval_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+        upload_json_to_blob(evaluation_result, blob_filename)
+
+        st.success(f"✅ Evaluation uploaded to Azure Blob: `{blob_filename}`")
 
         st.subheader("📊 Evaluation Metrics")
         st.write(f"**Answer Accuracy**: {eval_metrics['answer_accuracy']}")
