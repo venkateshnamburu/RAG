@@ -2,9 +2,6 @@
 # More GitHub Actions for Azure: https://github.com/Azure/actions
 # More info on Python, GitHub Actions, and Azure App Service: https://aka.ms/python-webapps-actions
 
-# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
-# More GitHub Actions for Azure: https://github.com/Azure/actions
-
 name: Build and deploy Python app to Azure Web App - Rag-Gemini-LLM
 
 on:
@@ -32,17 +29,17 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Create .streamlit/secrets.toml file
+      - name: Create Streamlit secrets file in home directory
         run: |
-          mkdir -p .streamlit
-          cat <<EOF > .streamlit/secrets.toml
-          AZURE_CONNECTION_STRING = "${{ secrets.AZURE_CONNECTION_STRING }}"
-          AZURE_CONTAINER_NAME = "${{ secrets.AZURE_CONTAINER_NAME }}"
-          GOOGLE_API_KEY = "${{ secrets.GOOGLE_API_KEY }}"
-          PINECONE_API_KEY = "${{ secrets.PINECONE_API_KEY }}"
-          PINECONE_ENVIRONMENT = "${{ secrets.PINECONE_ENVIRONMENT }}"
-          PINECONE_INDEX1 = "${{ secrets.PINECONE_INDEX1 }}"
-          EOF
+          mkdir -p ~/.streamlit
+          cat <<EOF > ~/.streamlit/secrets.toml
+AZURE_CONNECTION_STRING = "${{ secrets.AZURE_CONNECTION_STRING }}"
+AZURE_CONTAINER_NAME = "${{ secrets.AZURE_CONTAINER_NAME }}"
+GOOGLE_API_KEY = "${{ secrets.GOOGLE_API_KEY }}"
+PINECONE_API_KEY = "${{ secrets.PINECONE_API_KEY }}"
+PINECONE_ENVIRONMENT = "${{ secrets.PINECONE_ENVIRONMENT }}"
+PINECONE_INDEX1 = "${{ secrets.PINECONE_INDEX1 }}"
+EOF
 
       - name: Zip artifact for deployment
         run: zip -r release.zip . -x "venv/*"
