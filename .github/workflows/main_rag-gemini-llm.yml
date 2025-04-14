@@ -14,7 +14,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-      contents: read #This is required for actions/checkout
+      contents: read
 
     steps:
       - uses: actions/checkout@v4
@@ -31,8 +31,19 @@ jobs:
       
       - name: Install dependencies
         run: pip install -r requirements.txt
-        
-      # Optional: Add step to run tests here (PyTest, Django test suites, etc.)
+
+      # ✅ Create Streamlit secrets.toml from GitHub secrets
+      - name: Create .streamlit/secrets.toml file
+        run: |
+          mkdir -p .streamlit
+          echo "
+          AZURE_CONNECTION_STRING = '${{ secrets.AZURE_CONNECTION_STRING }}'
+          AZURE_CONTAINER_NAME = '${{ secrets.AZURE_CONTAINER_NAME }}'
+          GOOGLE_API_KEY = '${{ secrets.GOOGLE_API_KEY }}'
+          PINECONE_API_KEY = '${{ secrets.PINECONE_API_KEY }}'
+          PINECONE_ENVIRONMENT = '${{ secrets.PINECONE_ENVIRONMENT }}'
+          PINECONE_INDEX1 = '${{ secrets.PINECONE_INDEX1 }}'
+          " > .streamlit/secrets.toml
 
       - name: Zip artifact for deployment
         run: zip release.zip ./* -r
@@ -51,7 +62,7 @@ jobs:
     environment:
       name: 'Production'
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
-    
+
     steps:
       - name: Download artifact from build job
         uses: actions/download-artifact@v4
@@ -61,11 +72,12 @@ jobs:
       - name: Unzip artifact for deployment
         run: unzip release.zip
 
-      
       - name: 'Deploy to Azure Web App'
         uses: azure/webapps-deploy@v3
         id: deploy-to-webapp
         with:
           app-name: 'Rag-Gemini-LLM'
           slot-name: 'Production'
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_62B02B1EDB8A49E488C98FDF85315ED1 }}
+        slot-name: 'Production'
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_62B02B1EDB8A49E488C98FDF85315ED1 }}
