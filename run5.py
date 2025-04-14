@@ -52,7 +52,7 @@ if not st.session_state.user_name:
     else:
         st.stop()
 
-st.title("🤖 RAG Based LLM with GEMINI Vision Model")
+st.title("🤖 RAG Based LLM BOT with GEMINI Vision Model")
 
 # ---- Internal PDF Processing from Azure Blob ----
 @st.cache_resource
